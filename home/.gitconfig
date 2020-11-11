@@ -1,0 +1,16 @@
+# This is Git's per-user configuration file.
+[help]
+	# Automatically correct and execute mistyped commands.
+	autocorrect = 1
+[user]
+	name = Zach White
+	email = skullydazed@gmail.com
+[branch]
+	autosetupmerge = always
+	autosetuprebase = always
+[push]
+	default = current
+	followTags = true
+
+[init]
+	defaultBranch = main
