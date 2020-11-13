@@ -11,8 +11,10 @@ BASH_SILENCE_DEPRECATION_WARNING=1
 
 # Useful aliases
 alias ls='ls -F'
+unalias which 2>/dev/null
 
 # Settings I like
+unset PROMPT_COMMAND
 set +o ignoreeof
 set +o noclobber
 set -o vi
@@ -80,19 +82,17 @@ function current_date_time() {
 }
 
 function colorize_userhost() {
-	clr_green "${USER}@$(hostname -s)"
+	clr_green -n "${USER}"
+	clr_cyan -n @
+	clr_green "$(hostname -s)"
 }
 
 function colorize_pwd() {
 	clr_blue "$PWD"
 }
 
-export PS1="\n\`current_date_time\` [\`parse_git_branch\`\`parse_git_dirty\`]\n\`colorize_userhost\`:\`colorize_pwd\`:\`colorize_return_code\`\$ "
-
 # Basic environment settings
-#PS1='\u@\h:\w\$ '
-unalias which 2>/dev/null
-unset PROMPT_COMMAND
+PS1="\n\`current_date_time\` [\`parse_git_branch\`\`parse_git_dirty\`]\n\`colorize_userhost\`:\`colorize_pwd\`:\`colorize_return_code\`\$ "
 
 # Export important variables
 export BASH_SILENCE_DEPRECATION_WARNING EDITOR PAGER PS1
