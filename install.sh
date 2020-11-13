@@ -33,4 +33,6 @@ fi
 
 # Setup dotfiles
 cd ~/dotfiles
+echo 'DO NOT EDIT' > .note
+ln -s ../.note home
 sh bootstrap.sh

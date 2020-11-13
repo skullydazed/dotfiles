@@ -44,28 +44,28 @@ function update_dotfiles() {
 	(cd ~/dotfiles; git pull 2>&1 > /dev/null && ./bootstrap.sh)
 }
 
-function parse_git_dirty {
+function parse_git_status {
 	status=`git status 2>&1 | tee`
-	dirty=0
+	modified=0
 
         if echo -n "${status}" | grep "new file:" &> /dev/null; then
 		echo -n " (new)"
 	fi
 
         if echo -n "${status}" | grep "renamed:" &> /dev/null; then
-		dirty=1
+		modified=1
 	fi
 
         if echo -n "${status}" | grep "deleted:" &> /dev/null; then
-		dirty=1
+		modified=1
 	fi
 
         if echo -n "${status}" | grep "modified:" &> /dev/null; then
-		dirty=1
+		modified=1
 	fi
 
-        if [ $dirty -eq 1 ]; then
-		echo -n " (dirty)"
+        if [ $modified -eq 1 ]; then
+		echo -n " (modified)"
 	fi
 
         if echo -n "${status}" | grep "Untracked files:" &> /dev/null; then
@@ -117,7 +117,7 @@ function prompt_cmd() {
 	# If we're in a git clone display some relevant info about that clone
 	if [ -n "$BRANCH" ]; then
 		PS1+=' git['${PS1_BLUE}${BRANCH}${PS1_NORMAL}']'
-		status=$(parse_git_dirty)
+		status=$(parse_git_status)
 		if [ -n "$status" ]; then
 			PS1+="${PS1_MAGENTA}$status${PS1_NORMAL}"
 		fi
