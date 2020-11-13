@@ -1,8 +1,5 @@
 # zwhite's custom .profile
-PROFILE_VERSION=24
-
-# Pull in libraries
-source ~/.bash_colors
+PROFILE_VERSION=25
 
 # Global settings
 EDITOR=vi
@@ -19,80 +16,120 @@ set +o ignoreeof
 set +o noclobber
 set -o vi
 
+# Colors
+PS1_BLACK='\['$(tput setaf 0)'\]'
+PS1_RED='\['$(tput setaf 1)'\]'
+PS1_GREEN='\['$(tput setaf 2)'\]'
+PS1_YELLOW='\['$(tput setaf 3)'\]'
+PS1_BLUE='\['$(tput setaf 4)'\]'
+PS1_MAGENTA='\['$(tput setaf 5)'\]'
+PS1_CYAN='\['$(tput setaf 6)'\]'
+PS1_GREY='\['$(tput setaf 7)'\]'
+PS1_BGREY='\['$(tput setaf 8)'\]'
+PS1_BRED='\['$(tput setaf 9)'\]'
+PS1_BGREEN='\['$(tput setaf 10)'\]'
+PS1_BYELLOW='\['$(tput setaf 11)'\]'
+PS1_BBLUE='\['$(tput setaf 12)'\]'
+PS1_BMAGENTA='\['$(tput setaf 13)'\]'
+PS1_BCYAN='\['$(tput setaf 14)'\]'
+PS1_BWHITE='\['$(tput setaf 15)'\]'
+PS1_BRIGHT='\['$(tput bold)'\]'
+PS1_NORMAL='\['$(tput sgr0)'\]'
+PS1_BLINK='\['$(tput blink)'\]'
+PS1_REVERSE='\['$(tput smso)'\]'
+PS1_UNDERLINE='\['$(tput smul)'\]'
+
 # Useful functions
-function parse_git_branch() {
-	BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
-	if [ -n "${BRANCH}" ]; then
-		clr_blue "${BRANCH}"
-	fi
+function update_dotfiles() {
+	cd ~/dotfiles
+	git pull 2>&1 > /dev/null && ./bootstrap.sh
 }
 
 function parse_git_dirty {
 	status=`git status 2>&1 | tee`
 	dirty=0
 
-        if echo -n "${status}" 2> /dev/null | grep "new file:" &> /dev/null; then
-		clr_magenta -n " (new)"
+        if echo -n "${status}" | grep "new file:" &> /dev/null; then
+		echo -n " (new)"
 	fi
 
-        if echo -n "${status}" 2> /dev/null | grep "renamed:" &> /dev/null; then
+        if echo -n "${status}" | grep "renamed:" &> /dev/null; then
 		dirty=1
 	fi
 
-        if echo -n "${status}" 2> /dev/null | grep "deleted:" &> /dev/null; then
+        if echo -n "${status}" | grep "deleted:" &> /dev/null; then
 		dirty=1
 	fi
 
-        if echo -n "${status}" 2> /dev/null | grep "modified:" &> /dev/null; then
+        if echo -n "${status}" | grep "modified:" &> /dev/null; then
 		dirty=1
 	fi
 
         if [ $dirty -eq 1 ]; then
-		clr_magenta -n " (dirty)"
+		echo -n " (dirty)"
 	fi
 
-        if echo -n "${status}" 2> /dev/null | grep "Untracked files:" &> /dev/null; then
-		clr_magenta -n " (untracked)"
+        if echo -n "${status}" | grep "Untracked files:" &> /dev/null; then
+		echo -n " (untracked)"
 	fi
 
-        if echo -n "${status}" 2> /dev/null | grep "Changes not staged for commit" &> /dev/null; then
-		clr_magenta -n " (not_staged)"
+        if echo -n "${status}" | grep "Changes not staged for commit" &> /dev/null; then
+		echo -n " (not_staged)"
 	fi
 
-        if echo -n "${status}" 2> /dev/null | grep "Your branch is ahead of" &> /dev/null; then
-		clr_magenta -n " (can_push)"
+        if echo -n "${status}" | grep "Your branch is ahead of" &> /dev/null; then
+		echo -n " (can_push)"
 	fi
 
-        if echo -n "${status}" 2> /dev/null | grep "Your branch is behind" &> /dev/null; then
-		clr_magenta -n " (can_pull)"
+        if echo -n "${status}" | grep "Your branch is behind" &> /dev/null; then
+		echo -n " (can_pull)"
 	fi
 }
 
-function colorize_return_code() {
+function prompt_cmd() {
+	# This gets run before the prompt is displayed so we can rewrite the prompt.
+	# Unfortunately bash requires escaping the escape codes in a way that makes this necessary.
+
+	## Colorize the return code
 	RETVAL=$?
 	if [ $RETVAL -eq 0 ]; then
-		clr_green 0
+		RET_COLOR=$PS1_GREEN
 	else
-		clr_red $RETVAL
+		RET_COLOR=$PS1_RED
 	fi
-}
 
-function current_date_time() {
-	clr_cyan "$(date '+%Y-%m-%d %H:%M:%S')"
-}
+	## Determine if we're on a git clone
+	BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
 
-function colorize_userhost() {
-	clr_green -n "${USER}"
-	clr_cyan -n @
-	clr_green "$(hostname -s)"
-}
+	## Set our prompt
+	# Line 0
+	# Start by returning colors to normal in case of an errant last program
+	PS1=${PS1_NORMAL}'\n'
 
-function colorize_pwd() {
-	clr_blue "$PWD"
+	# Check for a note in this directory, and display it if it's there.
+	if [ -e .note ]; then
+		PS1+=${PS1_YELLOW}'dirnote: '$(< .note)${PS1_NORMAL}'\n'
+	fi
+
+	# Line 1
+	# Add the current date/time
+	PS1+=${PS1_CYAN}$(date "+%Y-%m-%d %H:%M:%S %Z")${PS1_NORMAL}
+
+	# If we're in a git clone display some relevant info about that clone
+	if [ -n "$BRANCH" ]; then
+		PS1+=' git['${PS1_BLUE}${BRANCH}${PS1_NORMAL}']'
+		status=$(parse_git_dirty)
+		if [ -n "$status" ]; then
+			PS1+="${PS1_MAGENTA}$status${PS1_NORMAL}"
+		fi
+	fi
+
+	# Line 2
+	PS1+='\n'${PS1_GREEN}'\u@\h'${PS1_NORMAL}':'${PS1_BLUE}'\w'${PS1_NORMAL}':'${RET_COLOR}'$?'${PS1_NORMAL}'\$ '
 }
 
 # Basic environment settings
-PS1="\n\`current_date_time\` [\`parse_git_branch\`\`parse_git_dirty\`]\n\`colorize_userhost\`:\`colorize_pwd\`:\`colorize_return_code\`\$ "
+PROMPT_COMMAND=prompt_cmd
 
 # Export important variables
 export BASH_SILENCE_DEPRECATION_WARNING EDITOR PAGER PS1
@@ -110,3 +147,6 @@ if which brew &> /dev/null && [ -r "$(brew --prefix)/etc/profile.d/bash_completi
 elif [ -f /etc/bash_completion ]; then
 	source /etc/bash_completion
 fi
+
+# Update ourselves
+update_dotfiles

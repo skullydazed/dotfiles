@@ -10,24 +10,6 @@ else
 	(cd ~/dotfiles && git pull --ff-only) || exit
 fi
 
-cd ~/dotfiles
-
-# Setup symlinks for the config files
-for file in $(find home -type f); do
-	filepath=$(echo $file | cut -f 2- -d /)
-
-	if [ -f ~/$filepath ]; then
-		mv ~/$filepath ~/$filepath.$(date +%Y%m%d-%H%M%S)
-	elif [ -e ~/$filepath -a ! -L ~/$filepath ]; then
-		echo "*** ~/$filepath is not a regular file or a symbolic link!"
-		continue
-	elif [ -L ~/$filepath ]; then
-		continue
-	fi
-		
-	ln -s $PWD/$file ~/$filepath
-done
-
 # Setup thefuck
 if ! which thefuck 2>&1 > /dev/null; then
 	case $(uname) in
@@ -48,3 +30,7 @@ if ! which thefuck 2>&1 > /dev/null; then
 			;;
 	esac
 fi
+
+# Setup dotfiles
+cd ~/dotfiles
+sh bootstrap.sh
