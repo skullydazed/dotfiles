@@ -5,7 +5,7 @@ cd ~
 
 # Fetch our dotfiles
 if ! [ -d ~/dotfiles ]; then
-	git -C ~ clone https://github.com/skullydazed/dotfiles.git || exit
+	(cd ~ && git clone https://github.com/skullydazed/dotfiles.git) || exit
 else
 	(cd ~/dotfiles && git pull --ff-only) || exit
 fi
