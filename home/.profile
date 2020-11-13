@@ -41,8 +41,7 @@ PS1_UNDERLINE='\['$(tput smul)'\]'
 
 # Useful functions
 function update_dotfiles() {
-	cd ~/dotfiles
-	git pull 2>&1 > /dev/null && ./bootstrap.sh
+	(cd ~/dotfiles; git pull 2>&1 > /dev/null && ./bootstrap.sh)
 }
 
 function parse_git_dirty {
