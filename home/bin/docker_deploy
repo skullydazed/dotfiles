@@ -1,0 +1,27 @@
+#!/bin/sh
+
+set -e
+set -x
+
+if [ ! -e Dockerfile ]; then
+	echo "*** No Dockerfile in this directory!"
+	exit 1
+elif [ ! -e DOCKER_RUN ]; then
+	echo "*** No DOCKER_RUN in this directory!"
+	exit 1
+fi
+
+# Pull in settings
+. ./DOCKER_RUN
+container_name=$(basename $PWD)
+
+# Build a new container
+docker build -t $container_name .
+
+# Remove the existing container, if it's there
+docker stop $container_name || true
+docker rm $container_name || true
+
+# Launch the new container
+echo '\n*** Launching the new container. Press ^P^Q to detach from the console.\n'
+docker run -it --name $container_name --restart=unless-stopped $DOCKER_RUN_ARGS $container_name $DOCKER_ENTRYPOINT_ARGS

@@ -2,9 +2,10 @@
 PROFILE_VERSION=26
 
 # Global settings
+BASH_SILENCE_DEPRECATION_WARNING=1
 EDITOR=vi
 PAGER=less
-BASH_SILENCE_DEPRECATION_WARNING=1
+PATH=$PATH:~/bin
 
 # Useful aliases
 alias ls='ls -F'
@@ -127,7 +128,7 @@ function prompt_cmd() {
 PROMPT_COMMAND=prompt_cmd
 
 # Export important variables
-export BASH_SILENCE_DEPRECATION_WARNING EDITOR PAGER PS1
+export BASH_SILENCE_DEPRECATION_WARNING EDITOR PAGER PATH PS1
 
 # Setup thefuck, if installed
 if ! which thefuck 2>&1 > /dev/null; then

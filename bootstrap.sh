@@ -3,6 +3,14 @@
 # Setup symlinks for the config files
 for file in $(find home -type f); do
 	filepath=$(echo $file | cut -f 2- -d /)
+	dirpath=$(dirname $filepath)
+
+	if [ ! -e $dirpath ]; then
+		mkdir $dirpath
+	elif [ ! -d $dirpath ]; then
+		echo "*** Directory $dirpath already exists and isn't a directory! Skipping ${filepath}."
+		continue
+	fi
 
 	if [ -f ~/$filepath ]; then
 		mv ~/$filepath ~/$filepath.$(date +%Y%m%d-%H%M%S)
