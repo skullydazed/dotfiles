@@ -12,12 +12,12 @@ for file in $(find home -type f); do
 		continue
 	fi
 
-	if [ -f ~/$filepath ]; then
-		mv ~/$filepath ~/$filepath.$(date +%Y%m%d-%H%M%S)
-	elif [ -e ~/$filepath -a ! -L ~/$filepath ]; then
-		echo "*** ~/$filepath is not a regular file or a symbolic link!"
+	if [ -L ~/$filepath ]; then
 		continue
-	elif [ -L ~/$filepath ]; then
+	elif [ -f ~/$filepath ]; then
+		mv ~/$filepath ~/$filepath.$(date +%Y%m%d-%H%M%S)
+	elif [ -e ~/$filepath ]; then
+		echo "*** ~/$filepath is not a regular file or a symbolic link!"
 		continue
 	fi
 
