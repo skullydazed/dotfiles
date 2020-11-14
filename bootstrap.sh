@@ -3,7 +3,7 @@
 # Setup symlinks for the config files
 for file in $(find home -type f); do
 	filepath=$(echo $file | cut -f 2- -d /)
-	dirpath=$(dirname $filepath)
+	dirpath=~/$(dirname $filepath)
 
 	if [ ! -e $dirpath ]; then
 		mkdir $dirpath
