@@ -73,6 +73,10 @@ function parse_git_status {
 		echo -n " (not_staged)"
 	fi
 
+        if echo -n "${status}" | grep "have diverged" &> /dev/null; then
+		echo -n " (need_rebase)"
+	fi
+
         if echo -n "${status}" | grep "Your branch is ahead of" &> /dev/null; then
 		echo -n " (can_push)"
 	fi
