@@ -10,7 +10,8 @@
 	autosetuprebase = always
 [push]
 	default = current
-	followTags = true
-
 [init]
 	defaultBranch = main
+[rerere]
+        autoupdate = true
+        enabled = true

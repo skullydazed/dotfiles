@@ -1,11 +1,17 @@
 # zwhite's custom .profile
-PROFILE_VERSION=26
+PROFILE_VERSION=27
 
 # Global settings
 BASH_SILENCE_DEPRECATION_WARNING=1
 EDITOR=vi
 PAGER=less
 PATH=$PATH:~/bin
+SHELL_SESSION_HISTORY=0
+
+# Pull in tokens
+if [ -f ~/.profile.tokens ]; then
+	source ~/.profile.tokens
+fi
 
 # Useful aliases
 alias ls='ls -F'

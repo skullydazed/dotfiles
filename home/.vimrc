@@ -1,3 +1,3 @@
 syntax off
-set cp
 set nohlsearch
+filetype indent plugin on
