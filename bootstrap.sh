@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Make sure our profile will get loaded
+if [ -f ~/.bash_profile ]; then
+	mv ~/.bash_profile ~/.bash_profile.$(date +%Y%m%d-%H%M%S)
+fi
+
 # Setup symlinks for the config files
 for file in $(find home -type f); do
 	filepath=$(echo $file | cut -f 2- -d /)
