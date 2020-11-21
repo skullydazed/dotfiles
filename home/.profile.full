@@ -141,7 +141,7 @@ PROMPT_COMMAND=prompt_cmd
 export BASH_SILENCE_DEPRECATION_WARNING EDITOR PAGER PATH PS1
 
 # Setup thefuck, if installed
-if ! which thefuck 2>&1 > /dev/null; then
+if which thefuck 2>&1 > /dev/null; then
 	eval $(thefuck --alias)
 fi
 
