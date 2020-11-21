@@ -11,7 +11,7 @@ for file in $(find home -type f); do
 	dirpath=~/$(dirname $filepath)
 
 	if [ ! -e $dirpath ]; then
-		mkdir $dirpath
+		mkdir -p $dirpath
 	elif [ ! -d $dirpath ]; then
 		echo "*** Directory $dirpath already exists and isn't a directory! Skipping ${filepath}."
 		continue
