@@ -5,6 +5,9 @@ if [ -f ~/.bash_profile ]; then
 	mv ~/.bash_profile ~/.bash_profile.$(date +%Y%m%d-%H%M%S)
 fi
 
+# Disable the fucking broken ass shell session shit
+touch ~/.bash_sessions_disable
+
 # Setup symlinks for the config files
 for file in $(find home -type f); do
 	filepath=$(echo $file | cut -f 2- -d /)
