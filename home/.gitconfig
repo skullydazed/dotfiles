@@ -5,9 +5,6 @@
 [user]
 	name = Zach White
 	email = skullydazed@gmail.com
-[branch]
-	autosetupmerge = always
-	autosetuprebase = always
 [push]
 	default = current
 [init]

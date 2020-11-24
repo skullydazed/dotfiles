@@ -51,44 +51,69 @@ function parse_git_status {
 	status=`git status 2>&1 | tee`
 	modified=0
 
-        if echo -n "${status}" | grep "new file:" &> /dev/null; then
+	# I would use case here but case really hates multiline strings
+	if echo -n "${status}" | grep "new file:" &> /dev/null; then
 		echo -n " (new)"
 	fi
 
-        if echo -n "${status}" | grep "renamed:" &> /dev/null; then
+	if echo -n "${status}" | grep "renamed:" &> /dev/null; then
 		modified=1
 	fi
 
-        if echo -n "${status}" | grep "deleted:" &> /dev/null; then
+	if echo -n "${status}" | grep "deleted:" &> /dev/null; then
 		modified=1
 	fi
 
-        if echo -n "${status}" | grep "modified:" &> /dev/null; then
+	if echo -n "${status}" | grep "modified:" &> /dev/null; then
 		modified=1
 	fi
 
-        if [ $modified -eq 1 ]; then
+	if [ $modified -eq 1 ]; then
 		echo -n " (modified)"
 	fi
 
-        if echo -n "${status}" | grep "Untracked files:" &> /dev/null; then
+	if echo -n "${status}" | grep "Untracked files:" &> /dev/null; then
 		echo -n " (untracked)"
 	fi
 
-        if echo -n "${status}" | grep "Changes not staged for commit" &> /dev/null; then
+	if echo -n "${status}" | grep "Changes not staged for commit" &> /dev/null; then
 		echo -n " (not_staged)"
 	fi
 
-        if echo -n "${status}" | grep "have diverged" &> /dev/null; then
+	if echo -n "${status}" | grep "have diverged" &> /dev/null; then
 		echo -n " (need_rebase)"
 	fi
 
-        if echo -n "${status}" | grep "Your branch is ahead of" &> /dev/null; then
+	if echo -n "${status}" | grep "Your branch is ahead of" &> /dev/null; then
 		echo -n " (can_push)"
 	fi
 
-        if echo -n "${status}" | grep "Your branch is behind" &> /dev/null; then
+	if echo -n "${status}" | grep "Your branch is behind" &> /dev/null; then
 		echo -n " (can_pull)"
+	fi
+
+	if echo -n "${status}" | grep "rebase in progress" &> /dev/null; then
+		echo -n " (rebase_conflict)"
+	fi
+
+	if echo -n "${status}" | grep "merge in progress" &> /dev/null; then
+		echo -n " (merge_conflict)"
+	fi
+
+	if echo -n "${status}" | grep "cherry-pick in progress" &> /dev/null; then
+		echo -n " (cherrypick_conflict)"
+	fi
+
+	if echo -n "${status}" | grep "All conflicts fixed but you are still merging." &> /dev/null; then
+		echo -n " (merge_continue)"
+	fi
+
+	if echo -n "${status}" | grep "All conflicts fixed but you are still rebasing." &> /dev/null; then
+		echo -n " (rebase_continue)"
+	fi
+
+	if echo -n "${status}" | grep "All conflicts fixed but you are still cherry-picking." &> /dev/null; then
+		echo -n " (cherrypick_continue)"
 	fi
 }
 
