@@ -48,23 +48,23 @@ PS1_UNDERLINE='\['$(tput smul)'\]'
 
 # Useful functions
 function parse_git_status {
-	status=`git status 2>&1 | tee`
+	status=$(git status 2>&1 | tee)
 	modified=0
 
 	# I would use case here but case really hates multiline strings
-	if echo -n "${status}" | grep "new file:" &> /dev/null; then
+	if echo "${status}" | grep "new file:" &> /dev/null; then
 		echo -n " (new)"
 	fi
 
-	if echo -n "${status}" | grep "renamed:" &> /dev/null; then
+	if echo "${status}" | grep "renamed:" &> /dev/null; then
 		modified=1
 	fi
 
-	if echo -n "${status}" | grep "deleted:" &> /dev/null; then
+	if echo "${status}" | grep "deleted:" &> /dev/null; then
 		modified=1
 	fi
 
-	if echo -n "${status}" | grep "modified:" &> /dev/null; then
+	if echo "${status}" | grep "modified:" &> /dev/null; then
 		modified=1
 	fi
 
@@ -72,48 +72,44 @@ function parse_git_status {
 		echo -n " (modified)"
 	fi
 
-	if echo -n "${status}" | grep "Untracked files:" &> /dev/null; then
+	if echo "${status}" | grep "Untracked files:" &> /dev/null; then
 		echo -n " (untracked)"
 	fi
 
-	if echo -n "${status}" | grep "Changes not staged for commit" &> /dev/null; then
+	if echo "${status}" | grep "Changes not staged for commit" &> /dev/null; then
 		echo -n " (not_staged)"
 	fi
 
-	if echo -n "${status}" | grep "have diverged" &> /dev/null; then
+	if echo "${status}" | grep "have diverged" &> /dev/null; then
 		echo -n " (need_rebase)"
 	fi
 
-	if echo -n "${status}" | grep "Your branch is ahead of" &> /dev/null; then
+	if echo "${status}" | grep "Your branch is ahead of" &> /dev/null; then
 		echo -n " (can_push)"
 	fi
 
-	if echo -n "${status}" | grep "Your branch is behind" &> /dev/null; then
+	if echo "${status}" | grep "Your branch is behind" &> /dev/null; then
 		echo -n " (can_pull)"
 	fi
 
-	if echo -n "${status}" | grep "rebase in progress" &> /dev/null; then
-		echo -n " (rebase_conflict)"
+	if echo "${status}" | grep "rebase in progress" &> /dev/null; then
+		echo -n " (rebasing)"
 	fi
 
-	if echo -n "${status}" | grep "merge in progress" &> /dev/null; then
-		echo -n " (merge_conflict)"
+	if echo "${status}" | grep "merge in progress" &> /dev/null; then
+		echo -n " (merging)"
 	fi
 
-	if echo -n "${status}" | grep "cherry-pick in progress" &> /dev/null; then
-		echo -n " (cherrypick_conflict)"
+	if echo "${status}" | grep "cherry-pick in progress" &> /dev/null; then
+		echo -n " (cherrypicking)"
 	fi
 
-	if echo -n "${status}" | grep "All conflicts fixed but you are still merging." &> /dev/null; then
-		echo -n " (merge_continue)"
+	if echo "${status}" | grep "both modified:" &> /dev/null; then
+		echo -n " (conflict)"
 	fi
 
-	if echo -n "${status}" | grep "All conflicts fixed but you are still rebasing." &> /dev/null; then
-		echo -n " (rebase_continue)"
-	fi
-
-	if echo -n "${status}" | grep "All conflicts fixed but you are still cherry-picking." &> /dev/null; then
-		echo -n " (cherrypick_continue)"
+	if echo "${status}" | grep "All conflicts fixed:" &> /dev/null; then
+		echo -n " (can_continue)"
 	fi
 }
 
@@ -130,7 +126,11 @@ function prompt_cmd() {
 	fi
 
 	## Determine if we're on a git clone
-	BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
+	BRANCH=$(git branch 2> /dev/null | grep '^* ' | cut -f 2- -d ' ')
+
+	if echo "${BRANCH}" | grep -q '^(no branch, '; then
+		BRANCH=$(echo $BRANCH | sed -e 's/^(no branch, //' -e 's/)$//')
+	fi
 
 	## Set our prompt
 	# Line 0
