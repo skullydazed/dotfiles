@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+"""Return a list of all files in conflict.
+"""
+from milc import cli
+
+@cli.argument('--edit', '-e', arg_only=True, action='store_true', help='Edit the files instead of listing them.')
+@cli.entrypoint('List all git files in conflict.')
+def main(cli):
+    git_status = cli.run(['git', 'status'], combined_output=True)
+    files = []
+
+    for line in git_status.stdout.split('\n'):
+        if 'both modified:' in line:
+            line = ':'.join(line.split(':')[1:]).strip()
+            files.append(line)
+
+    if cli.args.edit:
+        cli.run(['vi', *files], capture_output=False)
+    else:
+        print(' '.join(files))
+
+if __name__ == '__main__':
+    cli()
