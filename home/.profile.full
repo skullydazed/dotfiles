@@ -108,7 +108,7 @@ function parse_git_status {
 		echo -n " (conflict)"
 	fi
 
-	if echo "${status}" | grep "All conflicts fixed:" &> /dev/null; then
+	if echo "${status}" | grep "all conflicts fixed:" &> /dev/null; then
 		echo -n " (can_continue)"
 	fi
 }
