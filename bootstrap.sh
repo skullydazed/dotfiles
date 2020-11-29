@@ -31,3 +31,10 @@ for file in $(find home -type f); do
 
 	ln -s $PWD/$file ~/$filepath
 done
+
+# Install our requirements
+if ! which python3; then
+	echo 'Warning: No python3 on this system!'
+fi
+
+python3 -m pip install -U --user -r requirements.txt &> /dev/null
