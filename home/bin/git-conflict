@@ -1,53 +1,109 @@
 #!/usr/bin/env python3
 """Return a list of all files in conflict.
+
+Copyright 2020 Zach White <skullydazed@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+from pathlib import Path
+
 from milc import cli
 from milc.questions import yesno
 
+__VERSION__ = '1.0.0'
 
-def continue_action(action):
+
+def conflict_type():
+    """Determins what kind of conflict we're currently in.
+    """
+    action = None
+    git_branch = cli.run(['git', 'branch'], combined_output=True)
+
+    for line in git_branch.stdout.split('\n'):
+        if line.startswith('* (no branch, '):
+            action = line.split()[3]
+
+    if action == 'rebasing':
+        return 'rebase'
+
+    elif action == 'merging':
+        return 'merge'
+
+    elif action == 'cherry-picking':
+        return 'cherry-pick'
+
+
+def continue_action():
     """Run `git <action> --continue`.
     """
+    action = conflict_type()
+
+    if not action:
+        cli.log.error('No merge conflict!')
+        return
+
     git_continue = cli.run(['git', action, '--continue'], capture_output=False)
 
     return git_continue.returncode == 0
 
 
-@cli.argument('--auto', arg_only=True, action='store_true', help='Edit, add, and continue in one fell swoop.')
+def edit_files(files):
+    """Run the user's editor of choice to edit a list of files.
+    """
+    return cli.run(['vi', *files], capture_output=False)
+
+
+def find_conflicts():
+    """Returns a list of files in conflict.
+    """
+    git_diff = cli.run(['git', 'diff', '--name-only', '--diff-filter=U'], combined_output=True)
+
+    return [line.strip() for line in git_diff.stdout.strip().split('\n') if line.strip()]
+
+
+@cli.argument('--auto', '-a', arg_only=True, action='store_true', help='Edit, add, and continue in one fell swoop.')
 @cli.argument('--continue', '-c', arg_only=True, action='store_true', help='Continue the operation after conflict resolution.')
-@cli.argument('--add', '-a', arg_only=True, action='store_true', help='`git add` the files instead of listing them.')
+@cli.argument('--add', '-A', arg_only=True, action='store_true', help='`git add` the files instead of listing them.')
 @cli.argument('--edit', '-e', arg_only=True, action='store_true', help='Edit the files instead of listing them.')
 @cli.entrypoint('List all git files in conflict.')
 def main(cli):
-    git_status = cli.run(['git', 'status'], combined_output=True)
-    current_action = None
-    files = []
-
-    for lineno, line in enumerate(git_status.stdout.split('\n')):
-        if lineno == 0:
-            if 'in progress' in line:
-                current_action = line.split()[0]
-
-        elif 'both modified:' in line:
-                cli.run([
-            line = ':'.join(line.split(':')[1:]).strip()
-            files.append(line)
-
+    """List all git files in confilct.
+    """
+    # Run the automatic mode
     if cli.args.auto:
         while True:
-            cli.run(['vi', *files], capture_output=False)
+            files = find_conflicts()
+            edit_files(files)
 
             if yesno('Are you happy with the changes?', default=False):
                 cli.run(['git', 'add', *files], capture_output=False)
-                continue_action(current_action)
-    if cli.args.add:
-        cli.run(['git', 'add', *files], capture_output=False)
-    elif cli.args.continue and current_action:
-        continue_action(current_action)
-    elif cli.args.edit:
-        cli.run(['vi', *files], capture_output=False)
+                continue_action()
+                exit(0)
+
+    # Run the continue mode
+    if cli.args['continue']:
+        return continue_action()
+
+    # Generate a list of conflicts and act upon them
+    files = find_conflicts()
+
+    if files:
+        if cli.args.add:
+            cli.run(['git', 'add', *files], capture_output=False)
+
+        elif cli.args.edit:
+            edit_files(files)
+
+        else:
+            print('\n'.join(files))
+
     else:
-        print(' '.join(files))
+        cli.log.warning('No conflicts found!')
+
 
 if __name__ == '__main__':
     cli()
