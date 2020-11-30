@@ -2,19 +2,49 @@
 """Return a list of all files in conflict.
 """
 from milc import cli
+from milc.questions import yesno
 
+
+def continue_action(action):
+    """Run `git <action> --continue`.
+    """
+    git_continue = cli.run(['git', action, '--continue'], capture_output=False)
+
+    return git_continue.returncode == 0
+
+
+@cli.argument('--auto', arg_only=True, action='store_true', help='Edit, add, and continue in one fell swoop.')
+@cli.argument('--continue', '-c', arg_only=True, action='store_true', help='Continue the operation after conflict resolution.')
+@cli.argument('--add', '-a', arg_only=True, action='store_true', help='`git add` the files instead of listing them.')
 @cli.argument('--edit', '-e', arg_only=True, action='store_true', help='Edit the files instead of listing them.')
 @cli.entrypoint('List all git files in conflict.')
 def main(cli):
     git_status = cli.run(['git', 'status'], combined_output=True)
+    current_action = None
     files = []
 
-    for line in git_status.stdout.split('\n'):
-        if 'both modified:' in line:
+    for lineno, line in enumerate(git_status.stdout.split('\n')):
+        if lineno == 0:
+            if 'in progress' in line:
+                current_action = line.split()[0]
+
+        elif 'both modified:' in line:
+                cli.run([
             line = ':'.join(line.split(':')[1:]).strip()
             files.append(line)
 
-    if cli.args.edit:
+    if cli.args.auto:
+        while True:
+            cli.run(['vi', *files], capture_output=False)
+
+            if yesno('Are you happy with the changes?', default=False):
+                cli.run(['git', 'add', *files], capture_output=False)
+                continue_action(current_action)
+    if cli.args.add:
+        cli.run(['git', 'add', *files], capture_output=False)
+    elif cli.args.continue and current_action:
+        continue_action(current_action)
+    elif cli.args.edit:
         cli.run(['vi', *files], capture_output=False)
     else:
         print(' '.join(files))
