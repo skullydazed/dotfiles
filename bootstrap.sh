@@ -33,7 +33,7 @@ for file in $(find home -type f); do
 done
 
 # Install our requirements
-if ! which python3; then
+if ! which python3 &> /dev/null; then
 	echo 'Warning: No python3 on this system!'
 fi
 
