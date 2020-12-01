@@ -33,7 +33,7 @@ def conflict_type():
     elif action == 'merging':
         return 'merge'
 
-    elif action == 'cherry-picking':
+    if (find_dotgit() / 'CHERRY_PICK_HEAD').exists():
         return 'cherry-pick'
 
 
@@ -65,6 +65,14 @@ def find_conflicts():
     return [line.strip() for line in git_diff.stdout.strip().split('\n') if line.strip()]
 
 
+def find_dotgit():
+    """Returns the path to the .git file.
+    """
+    dot_git = cli.run(['git', 'rev-parse', '--git-dir'], combined_output=True)
+
+    return Path(dot_git.stdout.strip())
+
+
 @cli.argument('--auto', '-a', arg_only=True, action='store_true', help='Edit, add, and continue in one fell swoop.')
 @cli.argument('--continue', '-c', arg_only=True, action='store_true', help='Continue the operation after conflict resolution.')
 @cli.argument('--add', '-A', arg_only=True, action='store_true', help='`git add` the files instead of listing them.')
@@ -79,10 +87,14 @@ def main(cli):
             files = find_conflicts()
             edit_files(files)
 
-            if yesno('Are you happy with the changes?', default=False):
-                cli.run(['git', 'add', *files], capture_output=False)
-                continue_action()
-                exit(0)
+            try:
+                if yesno('Are you happy with the changes?', default=False):
+                    cli.run(['git', 'add', *files], capture_output=False)
+                    continue_action()
+                    exit(0)
+            except KeyboardInterrupt:
+                print('Interupted! User pressed ^C!')
+                exit(1)
 
     # Run the continue mode
     if cli.args['continue']:
