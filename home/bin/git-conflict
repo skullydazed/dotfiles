@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Return a list of all files in conflict.
+"""Helper for resolving git conflicts.
 
 Copyright 2020 Zach White <skullydazed@gmail.com>
 
@@ -73,48 +73,50 @@ def find_dotgit():
     return Path(dot_git.stdout.strip())
 
 
-@cli.argument('--auto', '-a', arg_only=True, action='store_true', help='Edit, add, and continue in one fell swoop.')
-@cli.argument('--continue', '-c', arg_only=True, action='store_true', help='Continue the operation after conflict resolution.')
-@cli.argument('--add', '-A', arg_only=True, action='store_true', help='`git add` the files instead of listing them.')
-@cli.argument('--edit', '-e', arg_only=True, action='store_true', help='Edit the files instead of listing them.')
-@cli.entrypoint('List all git files in conflict.')
+@cli.argument('--list', '-l', arg_only=True, action='store_true', help='Only list conflicted files.')
+@cli.argument('--continue', '-c', arg_only=True, action='store_true', help='Do the appropriate continue action.')
+@cli.argument('--edit', '-e', arg_only=True, action='store_true', help='Only edit the confilcted files.')
+@cli.argument('--add', '-a', arg_only=True, action='store_true', help='Only `git add` the conflicted files.')
+@cli.entrypoint('Resolve git conflicts.')
 def main(cli):
-    """List all git files in confilct.
+    """Resolve git conflicts.
     """
-    # Run the automatic mode
-    if cli.args.auto:
-        while True:
-            files = find_conflicts()
-            edit_files(files)
-
-            try:
-                if yesno('Are you happy with the changes?', default=False):
-                    cli.run(['git', 'add', *files], capture_output=False)
-                    continue_action()
-                    exit(0)
-            except KeyboardInterrupt:
-                print('Interupted! User pressed ^C!')
-                exit(1)
-
     # Run the continue mode
-    if cli.args['continue']:
-        return continue_action()
+    if cli.args.add or cli.args.edit or cli.args.list or cli.args['continue']:
+        # Generate a list of conflicts and act upon them
+        files = find_conflicts()
 
-    # Generate a list of conflicts and act upon them
-    files = find_conflicts()
+        if files:
+            if cli.args.add:
+                cli.run(['git', 'add', *files], capture_output=False)
 
-    if files:
-        if cli.args.add:
-            cli.run(['git', 'add', *files], capture_output=False)
+            if cli.args.edit:
+                edit_files(files)
 
-        elif cli.args.edit:
-            edit_files(files)
+            else:
+                print('\n'.join(files))
 
-        else:
-            print('\n'.join(files))
+        if cli.args['continue']:
+            continue_action()
+
+        elif not files:
+            cli.log.warning('No conflicts found!')
 
     else:
-        cli.log.warning('No conflicts found!')
+        # Run the automatic mode
+        if cli.args.auto:
+            while True:
+                files = find_conflicts()
+                edit_files(files)
+
+                try:
+                    if yesno('Are you happy with the changes?', default=False):
+                        cli.run(['git', 'add', *files], capture_output=False)
+                        continue_action()
+                        exit(0)
+                except KeyboardInterrupt:
+                    print('Interupted! User pressed ^C!')
+                    exit(1)
 
 
 if __name__ == '__main__':
