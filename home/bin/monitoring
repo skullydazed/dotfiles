@@ -5,7 +5,7 @@ exit_code=0
 
 # Ping any defined hosts
 if [ -e ~/.hostlist ]; then
-	for host in $(< ~/.hostlist); do
+	for host in $(grep -v '^#' ~/.hostlist); do
 		if ! ping -q -c 1 $host 2>&1 > /dev/null; then
 			echo "Host down: $host"
 			exit_code=$(($exit_code + 1))
@@ -22,7 +22,7 @@ if systemctl -h &> /dev/null; then
 
 	# Double check any configured important services
 	if [ -e ~/.servicelist ]; then
-		for service in $(< ~/.servicelist); do
+		for service in $(grep -v '^#' ~/.servicelist); do
 			if ! systemctl status $service 2>&1 > /dev/null; then
 				systemctl status $service
 				exit_code=$(($exit_code + 1))
