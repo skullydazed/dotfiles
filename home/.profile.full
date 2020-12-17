@@ -157,7 +157,19 @@ function prompt_cmd() {
 	fi
 
 	# Line 2
-	PS1+='\n'${PS1_GREEN}'\u@\h'${PS1_NORMAL}':'${PS1_BLUE}'\w'${PS1_NORMAL}':'${RET_COLOR}'$?'${PS1_NORMAL}'\$ '
+	PS1+='\n'
+	case "$HOSTNAME" in
+		Zacharys-MacBook-Pro*)
+			PS1+=${PS1_BLUE}
+		;;
+		zayante*)
+			PS1+=${PS1_BBLUE}
+		;;
+		*)
+			PS1+=${PS1_GREEN}
+		;;
+	esac
+	PS1+='\u@\h'${PS1_NORMAL}':'${PS1_BLUE}'\w'${PS1_NORMAL}':'${RET_COLOR}'$?'${PS1_NORMAL}'\$ '
 }
 
 # Basic environment settings
