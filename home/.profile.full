@@ -5,7 +5,7 @@ PROFILE_VERSION=27
 BASH_SILENCE_DEPRECATION_WARNING=1
 EDITOR=vi
 PAGER=less
-PATH=/sbin:/usr/sbin:$PATH:~/bin
+PATH=/sbin:/usr/sbin:$PATH:~/bin:~/.local/bin
 SHELL_SESSION_HISTORY=0
 
 # Pull in tokens
