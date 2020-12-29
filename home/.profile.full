@@ -4,8 +4,9 @@ PROFILE_VERSION=27
 # Global settings
 BASH_SILENCE_DEPRECATION_WARNING=1
 EDITOR=vi
+GEM_HOME="$HOME/.gems"
 PAGER=less
-PATH=/sbin:/usr/sbin:$PATH:~/bin:~/.local/bin
+PATH=/sbin:/usr/sbin:$PATH:~/bin:~/.local/bin:~/.gems/bin
 SHELL_SESSION_HISTORY=0
 
 # Pull in tokens
@@ -176,7 +177,7 @@ function prompt_cmd() {
 PROMPT_COMMAND=prompt_cmd
 
 # Export important variables
-export BASH_SILENCE_DEPRECATION_WARNING EDITOR PAGER PATH PS1
+export BASH_SILENCE_DEPRECATION_WARNING EDITOR GEM_HOME PAGER PATH PS1
 
 # Setup thefuck, if installed
 if which thefuck 2>&1 > /dev/null; then
