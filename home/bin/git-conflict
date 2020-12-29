@@ -104,19 +104,18 @@ def main(cli):
 
     else:
         # Run the automatic mode
-        if cli.args.auto:
-            while True:
-                files = find_conflicts()
-                edit_files(files)
+        while True:
+            files = find_conflicts()
+            edit_files(files)
 
-                try:
-                    if yesno('Are you happy with the changes?', default=False):
-                        cli.run(['git', 'add', *files], capture_output=False)
-                        continue_action()
-                        exit(0)
-                except KeyboardInterrupt:
-                    print('Interupted! User pressed ^C!')
-                    exit(1)
+            try:
+                if yesno('Are you happy with the changes?', default=False):
+                    cli.run(['git', 'add', *files], capture_output=False)
+                    continue_action()
+                    exit(0)
+            except KeyboardInterrupt:
+                print('Interupted! User pressed ^C!')
+                exit(1)
 
 
 if __name__ == '__main__':
