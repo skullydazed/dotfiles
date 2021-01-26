@@ -163,6 +163,9 @@ function prompt_cmd() {
 		Zacharys-MacBook-Pro*)
 			PS1+=${PS1_BLUE}
 		;;
+		redwood*|hwy36*)
+			PS1+=${PS1_RED}
+		;;
 		zayante*)
 			PS1+=${PS1_BBLUE}
 		;;
