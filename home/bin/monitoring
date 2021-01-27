@@ -16,6 +16,7 @@ fi
 # Check local services
 if systemctl -h &> /dev/null; then
 	if systemctl list-units -t service | grep -q failed; then
+		echo "*** Non-running systemd services:"
 		systemctl list-units -t service | grep failed
 		exit_code=$(($exit_code + 1))
 	fi
@@ -28,6 +29,17 @@ if systemctl -h &> /dev/null; then
 				exit_code=$(($exit_code + 1))
 			fi
 		done
+	fi
+fi
+
+# Check docker services
+if docker -h &> /dev/null; then
+	down_containers=$(docker ps --filter "status=exited" --filter "status=paused" --filter "status=dead" | wc -l)
+	down_containers=$(($down_containers - 1))
+	if [ $down_containers -gt 0 ]; then
+		echo "*** Non-running docker containers:"
+		docker ps --filter "status=exited" --filter "status=paused" --filter "status=dead"
+		exit_code=$(($exit_code + $down_containers))
 	fi
 fi
 
