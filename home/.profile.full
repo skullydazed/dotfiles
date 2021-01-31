@@ -15,6 +15,7 @@ if [ -f ~/.profile.tokens ]; then
 fi
 
 # Useful aliases
+alias fix-branch='git branch --set-upstream-to=origin/$BRANCH $BRANCH'
 alias ls='ls -F'
 alias taillog='journalctl -n 100 -f -u'
 unalias which 2>/dev/null
