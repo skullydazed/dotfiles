@@ -1,0 +1,13 @@
+#!/bin/bash
+# Send a message to discord through the local mqtt
+
+case $HOSTNAME in
+	hwy36*|lowpass*)
+		MQTT=172.16.25.1
+	;;
+	*)
+		MQTT=172.16.22.1
+	;;
+esac
+
+mosquitto_pub -h $MQTT -t 'discord/cli' -m "$*"
