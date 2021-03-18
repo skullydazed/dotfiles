@@ -129,10 +129,23 @@ function prompt_cmd() {
 	fi
 
 	## Determine if we're on a git clone
-	BRANCH=$(git branch 2> /dev/null | grep '^* ' | cut -f 2- -d ' ')
+	GIT_REPO=$(basename $(git rev-parse --show-toplevel) 2> /dev/null)
 
-	if echo "${BRANCH}" | grep -q '^(no branch, '; then
-		BRANCH=$(echo $BRANCH | sed -e 's/^(no branch, //' -e 's/)$//')
+	if [ -n "$GIT_REPO" ]; then
+		BRANCH=$(git branch 2> /dev/null | grep '^* ' | cut -f 2- -d ' ')
+
+		if echo "${BRANCH}" | grep -q '^(no branch, '; then
+			BRANCH=$(echo $BRANCH | sed -e 's/^(no branch, //' -e 's/)$//')
+		fi
+
+		NEW_REPO_BRANCH="${GIT_REPO}:${BRANCH}"
+
+		if [ "$REPO_BRANCH" != "$NEW_REPO_BRANCH" ]; then
+			REPO_BRANCH_HISTORY="$NEW_REPO_BRANCH $REPO_BRANCH_HISTORY"
+			REPO_BRANCH=$NEW_REPO_BRANCH
+		fi
+	else
+		BRANCH=''
 	fi
 
 	## Set our prompt
