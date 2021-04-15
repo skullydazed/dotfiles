@@ -20,6 +20,22 @@ alias ls='ls -F'
 alias taillog='journalctl -n 100 -f -u'
 unalias which 2>/dev/null
 
+# Useful functions
+function cal {
+	CAL=$(which cal)
+	if echo $* | grep -q -- -; then
+		$CAL $@
+	elif [ -z "$1" -a -z "$2" ]; then
+		$CAL -3
+	elif [ -z "$2" -a $1 -gt 12 ]; then
+		$CAL $1
+	elif [ -z "$2" ]; then
+		$CAL $1 $(date +%Y)
+	else
+		$CAL $1
+	fi
+}
+
 # Settings I like
 unset PROMPT_COMMAND
 set +o ignoreeof
