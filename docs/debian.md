@@ -33,6 +33,12 @@ EOF
 sudo systemctl daemon-reload
 ```
 
+## OpenVPN (and other services that have multiple systemd instances)
+
+* Create your configuration in /etc/openvpn/{client,server}/<name>.conf
+* Enable the systemd service: `systemctl enable openvpn-{client,server}@<name>`
+* Start the service: `systemctl start openvpn-{client,server}@<name>`
+
 ## NAT/Firewall setup
 
 You'll need to collect the following information:
