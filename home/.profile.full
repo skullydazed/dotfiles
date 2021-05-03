@@ -14,6 +14,16 @@ if [ -f ~/.profile.tokens ]; then
 	source ~/.profile.tokens
 fi
 
+# OS Specific stuff
+case $(uname) in
+	Linux)
+		alias open=xdg-open
+	;;
+	MINGW64_NT*)
+		alias open=start
+	;;
+esac
+
 # Useful aliases
 alias fix-branch='git branch --set-upstream-to=origin/$BRANCH $BRANCH'
 alias ls='ls -F'
