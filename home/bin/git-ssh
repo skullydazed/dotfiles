@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+
+from milc import cli
+
+
+@cli.entrypoint('Change our current clone to an ssh upstream.')
+def git_ssh(cli):
+    """Change our current clone over to an ssh upstream.
+    """
+    current_origin = cli.run(['git', 'remote']).stdout.strip()
+    current_upstream = cli.run(['git', 'remote', 'get-url', current_origin]).stdout.strip()
+    if current_upstream.startswith('https://github.com/'):
+        proto, _, host, owner, repo = current_upstream.split('/', 5)
+
+        if '.git' in repo:
+            repo = repo.split('.git')[0]
+
+        new_upstream = f'git@github.com:{owner}/{repo}.git'
+        cli.log.info('Updating remote %s to %s', current_origin, new_upstream)
+        cli.run(['git', 'remote', 'set-url', current_origin, new_upstream], capture_output=False)
+
+
+if __name__ == '__main__':
+    cli()
