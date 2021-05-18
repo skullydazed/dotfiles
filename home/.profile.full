@@ -1,5 +1,5 @@
 # zwhite's custom .profile
-PROFILE_VERSION=27
+PROFILE_VERSION=28
 
 # Global settings
 BASH_SILENCE_DEPRECATION_WARNING=1
@@ -8,6 +8,8 @@ GEM_HOME="$HOME/.gems"
 PAGER=less
 PATH=/sbin:/usr/sbin:$PATH:~/bin:~/.local/bin:~/.gems/bin
 SHELL_SESSION_HISTORY=0
+HISTSIZE=5000000
+HISTFILESIZE=1000000
 
 # Pull in tokens
 if [ -f ~/.profile.tokens ]; then
