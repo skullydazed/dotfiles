@@ -16,15 +16,19 @@ if [ -f ~/.profile.tokens ]; then
 	source ~/.profile.tokens
 fi
 
-# OS Specific stuff
-case $(uname) in
-	Linux)
-		alias open=xdg-open
-	;;
-	MINGW64_NT*)
-		alias open=start
-	;;
-esac
+# Create a universal open command
+if [ "$TERM_PROGRAM" = "vscode" ]; then
+	alias open=code
+else
+	case $(uname) in
+		Linux)
+			alias open=xdg-open
+		;;
+		MINGW64_NT*)
+			alias open=start
+		;;
+	esac
+fi
 
 # Useful aliases
 alias fix-branch='git branch --set-upstream-to=origin/$BRANCH $BRANCH'
