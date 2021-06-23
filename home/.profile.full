@@ -204,6 +204,11 @@ function prompt_cmd() {
 		fi
 	fi
 
+	# If a python virtualenv has been activated show that
+	if [ -n "$VIRTUAL_ENV" ]; then
+		PS1+=' venv['${PS1_BLUE}${VIRTUAL_ENV}${PS1_NORMAL}']'
+	fi
+
 	# Line 2
 	PS1+='\n'
 	case "$HOSTNAME" in
