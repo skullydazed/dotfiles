@@ -53,6 +53,25 @@ function cal {
 	fi
 }
 
+function git-history {
+	if [ -n "$REPO_BRANCH_HISTORY" ]; then
+		current_num=$(echo $REPO_BRANCH_HISTORY | wc -w)
+		{
+			echo 'Num~Repository~Branch'
+			echo '---~----------~------'
+			for repo_branch in $REPO_BRANCH_HISTORY; do
+				repo=$(echo "$repo_branch" | cut -f 1 -d :)
+				branch=$(echo "$repo_branch" | cut -f 2- -d :)
+				echo "$current_num~$repo~$branch"
+				current_num=$((current_num - 1))
+			done | tac
+		} | column -t -s'~'
+	else
+		echo "No branch history!"
+		return 1
+	fi
+}
+
 # Settings I like
 unset PROMPT_COMMAND
 set +o ignoreeof
