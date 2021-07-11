@@ -45,14 +45,14 @@ if ! python3 --version &> /dev/null; then
 
 fi
 
-# Make sure python-pip is installed
+# Make sure python3-pip is installed
 if ! pip3 --version &> /dev/null; then
 	case $(uname) in
 		Linux)
 			if grep -q 'ID.*debian' /etc/os-release; then
-				echo 'pip3 not found! Installing pip3!'
+				echo 'pip3 not found! Installing python3-pip!'
 				sudo apt update
-				sudo apt install pip3
+				sudo apt install python3-pip
 			else
 				echo 'Unknown Linux distro! Install pip3!'
 				exit 1
