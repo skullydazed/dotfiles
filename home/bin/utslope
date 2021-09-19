@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+
+import os
+
+from milc import cli, sparkline
+from uptime import uptime
+
+
+@cli.argument('--normal', type=float, default=1.5, help='The upper threshold for "normal" load average. (Default: 1)')
+@cli.argument('--high', type=float, default=3.0, help='The lower threshold for "high" load average. (Default: 2)')
+@cli.entrypoint('Show a compact representation of uptime.')
+def main(cli):
+    loadavg = os.getloadavg()
+    load_spark = sparkline(loadavg, highlight_low=cli.config.general.normal, highlight_high=cli.config.general.high, positive_color='{fg_yellow}', highlight_low_color='{fg_green}', highlight_high_color='{fg_red}', positive_reset='{fg_reset}', highlight_low_reset='{fg_reset}', highlight_high_reset='{fg_reset}')
+    uptime_days = uptime() / 86400
+
+    cli.echo('Up %.2f days, %s', uptime_days, load_spark)
+
+if __name__ == '__main__':
+    cli()
