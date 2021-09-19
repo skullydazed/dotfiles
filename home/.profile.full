@@ -271,3 +271,8 @@ if type brew &>/dev/null; then
 elif [ -f /etc/bash_completion ]; then
 	source /etc/bash_completion
 fi
+
+# Output some useful info about the machine
+w
+free -h
+utslope
