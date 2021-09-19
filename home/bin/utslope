@@ -6,8 +6,8 @@ from milc import cli, sparkline
 from uptime import uptime
 
 
-@cli.argument('--normal', type=float, default=1.5, help='The upper threshold for "normal" load average. (Default: 1)')
-@cli.argument('--high', type=float, default=3.0, help='The lower threshold for "high" load average. (Default: 2)')
+@cli.argument('--normal', type=float, default=1.5, help='The upper threshold for "normal" load average. (Default: 1.5)')
+@cli.argument('--high', type=float, default=3.0, help='The lower threshold for "high" load average. (Default: 3)')
 @cli.entrypoint('Show a compact representation of uptime.')
 def main(cli):
     loadavg = os.getloadavg()
