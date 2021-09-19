@@ -1,4 +1,165 @@
 #!/usr/bin/env python2
+"""Read and write Borderlands 2 save files
+
+<https://github.com/pclifford/borderlands2>
+
+# ChangeLog- zwhite
+
+2021/08/17
+
+    * Add to my dotfiles
+    * Automatically save a backup
+
+# Original README
+
+A simple command line utility to extract player information from a Borderlands
+2 save file, or to create a new save file from player information.
+
+Note the following before trying to use it:
+
+* It has no graphical interface and is not easy to use
+* It does not provide any mechanisms for creating items or weapons
+* It is a proof of concept and will corrupt your save files if used improperly
+* It requires a working Python 2 interpreter (2.6 or later, not 3)
+
+## How do I modify values in a save file?
+
+Modify save file data by changing one or more of "level", "skillpoints",
+"money", "eridium", "seraph", "tokens", "gunslots", "backpack", "bank",
+"unlocks", or "itemlevels":
+
+    python savefile.py -m eridium=99 old.sav new.sav
+
+Set the levels of all your items and weapons (except those at level 1, which
+are left alone) to match your character's level:
+
+    python savefile.py -m itemlevels old.sav new.sav
+
+Or to a specific level:
+
+    python savefile.py -m itemlevels=20 old.sav new.sav
+
+Set the number of guns your character can have equipped to 2, 3, or 4:
+
+    python savefile.py -m gunslots=4 old.sav new.sav
+
+Set the size of your character's backpack, and the corresponding number of
+purchased backpack SDUs:
+
+    python savefile.py -m backpack=27 old.sav new.sav
+
+Set the size of your character's bank, and the corresponding number of
+purchased bank SDUs:
+
+    python savefile.py -m bank=16 old.sav new.sav
+
+Unlock the Creature Slaughter Dome (Natural Selection Annex):
+
+    python savefile.py -m unlocks=slaughterdome old.sav new.sav
+
+Unlock the True Vault Hunter mode:
+
+    python savefile.py -m unlocks=truevaulthunter old.sav new.sav
+
+Unlock both at once:
+
+    python savefile.py -m unlocks=slaughterdome:truevaulthunter old.sav new.sav
+
+Or many changes at once, separated by commas:
+
+    python savefile.py -m level=7,skillpoints=42,money=1234,eridium=12,seraph=120,itemlevels old.sav new.sav
+
+Add --little-endian to write the save file in a format that should be readable
+by the PC version (the default is to write the data in big-endian format, for
+the console versions):
+
+    python savefile.py -m eridium=99 --little-endian old.sav new.sav
+
+## How do I convert a PC save to work on a console?
+
+A PC save file is automatically detected and read, and the default is to write
+in the correct format for a console.  If you don't want to make any changes
+except to the format:
+
+    python savefile.py -m "" pc.sav console.sav
+
+## How do I convert a console save to work on a PC?
+
+As before, add --little-endian to the command to write the data in a format
+suitable for the PC.  If you don't want to make any changes except to the
+format:
+
+    python savefile.py -m "" --little-endian console.sav pc.sav
+
+## How do I take a copy of all my character's items?
+
+All items stored and held in the character's bank or inventory can be exported
+to a text file as a list of codes, in a format compatible with Gibbed's save
+editor:
+
+    python savefile.py -e items.txt your-save-game.sav
+
+## How do I import those items back into a character?
+
+A text file of codes generated as above, or assembled by hand, can be imported
+into a character like so:
+
+    python savefile.py -i items.txt old.sav new.sav
+
+(Don't forget to add --little-endian if you're creating a save file for the PC
+version.)
+
+By default all items will be inserted into the inventory, but this can be
+changed with a line containing "; Bank" to indicate that all following items
+should go into the bank, or one of either "; Weapons" or "; Items" to indicate
+that all following items should go into the inventory.  For example, importing
+a file containing the following will put a Vault Hunter's Relic into the
+inventory and a Righteous Infinity pistol into the bank:
+
+    ; Bank
+    BL2(h0Hd1Z+jY/s2Qy++Zu8Ba9qXoOmjwJ6NhrlsOmhNMX+oJo5CfQns)
+    ; Items
+    BL2(B2vuv4tz1zSQCf2pqLJCS5XD/tKN4FXpjRJLnn1v85U=)
+
+## How do I just extract the player data?
+
+Extract the raw protocol buffer data from a save file:
+
+    python savefile.py -d your-save-game.sav player.p
+
+Extract the data in JSON format (encoded purely to preserve all the raw
+information -- not very readable):
+
+    python savefile.py -d -j your-save-game.sav player.json
+
+Extract the data in JSON format, applying further parsing to make the data as
+readable as possible:
+
+    python savefile.py -d -j -p your-save-game.sav player.json
+
+It may help to copy and paste the contents of the .json file into a site like
+http://www.jsoneditoronline.org/ in order to view or modify the contents, to
+ensure that the necessary JSON formatting is preserved.
+
+Note that if you modify any of the data you extract in this way there is a very
+high probability that you will corrupt your save file.  Please make sure you
+have a backup first.
+
+## How do I write the player data back to a new save file?
+
+Create a new save file from protocol buffer data:
+
+    python savefile.py player.p your-new-save-game.sav
+
+Create a new save file from the JSON data:
+
+    python savefile.py -j player.json your-new-save-game.sav
+
+As before, to write a save file that can be read by the PC version add the
+--little-endian flag to one of the above, eg:
+
+    python savefile.py -j --little-endian player.json your-new-save-game.sav
+"""
 
 import binascii
 from bisect import insort
@@ -8,8 +169,10 @@ import json
 import math
 import optparse
 import random
+import shutil
 import struct
 import sys
+import time
 
 
 class BL2Error(Exception): pass
@@ -1057,9 +1220,9 @@ def parse_args():
         help="read or write save game data in JSON format, rather than raw protobufs"
     )
     p.add_option(
-        "-l", "--little-endian",
+        "-c", "--console",
         action="store_true",
-        help="change the output format to little endian, to write PC-compatible save files"
+        help="change the output format to big endian, to write Xbox and PS4 compatible save files"
     )
     p.add_option(
         "-m", "--modify", metavar="MODIFICATIONS",
@@ -1073,6 +1236,8 @@ def parse_args():
     return p.parse_args()
 
 def main(options, args):
+    output = []
+
     if len(args) >= 2 and args[0] != "-" and args[0] == args[1]:
         print >>sys.stderr, "Cannot overwrite the save file, please use a different filename for the new save"
         return
@@ -1082,15 +1247,10 @@ def main(options, args):
     else:
         input = open(args[0], "rb")
 
-    if len(args) < 2 or args[1] == "-":
-        output = sys.stdout
-    else:
-        output = open(args[1], "wb")
-
-    if options.little_endian:
-        endian = 0
-    else:
+    if options.console:
         endian = 1
+    else:
+        endian = 0
 
     if options.modify is not None:
         changes = {}
@@ -1098,13 +1258,15 @@ def main(options, args):
             for m in options.modify.split(","):
                 k, v = (m.split("=", 1) + [None])[: 2]
                 changes[k] = v
-        output.write(modify_save(input.read(), changes, endian))
+        output.append(modify_save(input.read(), changes, endian))
     elif options.export_items:
         output = open(options.export_items, "w")
         export_items(input.read(), output)
+        print 'Wrote player items to %s' % (options.export_items,)
+        exit()
     elif options.import_items:
         itemlist = open(options.import_items, "r")
-        output.write(import_items(input.read(), itemlist.read(), endian))
+        output.append(import_items(input.read(), itemlist.read(), endian))
     elif options.decode:
         savegame = input.read()
         player = unwrap_player_data(savegame)
@@ -1113,7 +1275,7 @@ def main(options, args):
             if options.parse:
                 data = apply_structure(data, save_structure)
             player = json.dumps(data, encoding="latin1", sort_keys=True, indent=4)
-        output.write(player)
+        output.append(player)
     else:
         player = input.read()
         if options.json:
@@ -1122,13 +1284,30 @@ def main(options, args):
                 data = remove_structure(data, invert_structure(save_structure))
             player = write_protobuf(data)
         savegame = wrap_player_data(player, endian)
-        output.write(savegame)
+        output.append(savegame)
+
+    # Write the output file
+    if output:
+        if len(args) < 2:
+            newname = args[0]+'.'+time.strftime('%Y%m%d-%H%M%S')
+            shutil.copyfile(args[0], newname)
+            print('Copied %s to backup file %s' % (args[0],newname))
+            fd = open(args[0], "wb")
+        elif args[1] == "-":
+            fd = sys.stdout
+        else:
+            fd = open(args[1], "wb")
+
+        fd.write('\n'.join(output))
 
 if __name__ == "__main__":
     options, args = parse_args()
     try:
         main(options, args)
+    except SystemExit:
+        pass
     except:
+        print >>sys.stderr, sys.exc_info()
         print >>sys.stderr, (
             "Something went wrong, but please ensure you have the latest "
             "version from https://github.com/pclifford/borderlands2 before "
