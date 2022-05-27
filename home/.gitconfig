@@ -15,3 +15,5 @@
 [alias]
 	branchpoint = !zsh -c 'diff -u <(git rev-list --first-parent \"${1:-master}\") <(git rev-list --first-parent \"${2:-HEAD}\") | sed -ne \"s/^ //p\" | head -1' -
 	remotes = "!f() { for remote in \"$(git remote)\"; do echo \"$remote\": \"$(git remote get-url $remote)\"; done; }; f"
+[pull]
+	ff = only
