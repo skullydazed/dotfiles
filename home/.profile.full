@@ -30,6 +30,16 @@ else
 	esac
 fi
 
+# Determine our MQTT server
+case $HOSTNAME in
+        hwy36*|lowpass*)
+                MQTT_SERVER=172.16.25.1
+        ;;
+        *)
+                MQTT_SERVER=172.16.22.1
+        ;;
+esac
+
 # Useful aliases
 alias fix-branch='git branch --set-upstream-to=origin/$BRANCH $BRANCH'
 alias ls='ls -F'
@@ -70,6 +80,19 @@ function git-history {
 		echo "No branch history!"
 		return 1
 	fi
+}
+
+function mqtt-clear {
+	if [ -z "$1" ]; then
+		echo "Usage: $0 <topic>"
+		echo
+		echo Clears all retained messages for the specified topic.
+		exit 1
+	fi
+
+	for topic in $(mosquitto_sub -h $MQTT_SERVER -v -W 1 -t "$1" | cut -f 1 -d :); do
+		mosquitto_pub -h $MQTT_SERVER -t $topic -m ''
+	done
 }
 
 # Settings I like
