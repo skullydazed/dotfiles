@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+
+from http.server import SimpleHTTPRequestHandler, HTTPServer
+
+from milc import cli
+
+
+@cli.argument('--host', '-H', default='127.0.0.1', help='IP to listen on (Default: 127.0.0.1)')
+@cli.argument('--port', '-p', default=8000, type=int, help='Port to listen on (Default: 8000)')
+@cli.entrypoint('Start an HTTP server for the current directory.')
+def main(cli):
+    server_address = (cli.args.host, cli.args.port)
+    httpd = HTTPServer(server_address, SimpleHTTPRequestHandler)
+    cli.log.info('Listening on http://%s:%s/', *server_address)
+    httpd.serve_forever()
+
+
+if __name__ == '__main__':
+    cli()
