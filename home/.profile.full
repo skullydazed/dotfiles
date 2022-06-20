@@ -5,6 +5,7 @@ PROFILE_VERSION=28
 BASH_SILENCE_DEPRECATION_WARNING=1
 EDITOR=vi
 GEM_HOME="$HOME/.gems"
+LC_ALL="en_US.UTF-8"
 PAGER=less
 PATH=/sbin:/usr/sbin:$PATH:~/bin:~/.local/bin:~/.gems/bin
 SHELL_SESSION_HISTORY=0
