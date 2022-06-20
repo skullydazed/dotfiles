@@ -278,7 +278,7 @@ function prompt_cmd() {
 PROMPT_COMMAND=prompt_cmd
 
 # Export important variables
-export BASH_SILENCE_DEPRECATION_WARNING EDITOR GEM_HOME PAGER PATH PS1
+export BASH_SILENCE_DEPRECATION_WARNING EDITOR GEM_HOME LC_ALL PAGER PATH PS1
 
 # Setup thefuck, if installed
 if which thefuck 2>&1 > /dev/null; then
