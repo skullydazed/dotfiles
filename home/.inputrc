@@ -18,3 +18,6 @@ set skip-completed-text on
 set input-meta on
 set output-meta on
 set convert-meta off
+
+# Disable the annoying bracketed paste
+set enable-bracketed-paste off
